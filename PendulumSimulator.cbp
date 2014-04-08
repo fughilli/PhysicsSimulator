@@ -47,12 +47,18 @@
 		<Unit filename="physeng.cpp" />
 		<Unit filename="physeng.h" />
 		<Unit filename="physeng_constraint.cpp" />
+		<Unit filename="physeng_constraint.h" />
 		<Unit filename="sdlgameeng.cpp" />
 		<Unit filename="sdlgameeng.h" />
+		<Unit filename="shape_solver.cpp" />
+		<Unit filename="shape_solver.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
 			<debugger />
+			<wxsmith version="1">
+				<gui name="wxWidgets" src="" main="" init_handlers="necessary" language="CPP" />
+			</wxsmith>
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>
