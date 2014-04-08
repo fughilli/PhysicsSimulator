@@ -98,12 +98,6 @@ void PhysicsEngine::stepSim(double dt)
     }
 }
 
-bool PhysicsEngine::lineSegIntersect(Vector2d a1, Vector2d a2, Vector2d b1, Vector2d b2, Vector2d& res)
-{
-    // TODO: implement line segment intersection check w/last argument modified to be intersection point (if any)
-    return false;
-}
-
 PhysicsObject::PhysicsObject(PhysicsEngine& physicsEngine, bool dynamic) : dynamic(dynamic)
 {
     m_physicsEngine = &physicsEngine;
@@ -154,17 +148,6 @@ bool PhysicsObject::checkCollision(const PhysicsObject& other, Vector2d& hitNorm
         return true;
     }
     return false;
-}
-
-Polygon::Polygon()
-{
-
-}
-
-BoundingBox::BoundingBox()
-{
-    a = Vector2d::zero;
-    b = Vector2d::zero;
 }
 
 //Polygon::intersect

@@ -4,7 +4,7 @@
 #include "gameeng.h"
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
-#include <cstdint>
+#include <cstdint>//#define USE_OPENGL
 
 class SDLGameEngine;
 class SDLGameObject;
@@ -17,7 +17,7 @@ public:
     ~SDLGameEngine();
     void step(double dt);
     void debugDrawVec(const Vector2d& origin, const Vector2d& vec, uint8_t r = 255, uint8_t g = 255, uint8_t b = 255) const;
-    void draw(SDL_Texture* tex, int x, int y, double angle, double scale);
+    void draw(SDL_Texture* tex, int x, int y, double angle, double scale);    #ifdef USE_OPENGL    void drawToQuad(SDL_Texture* tex, const& SDL_Rect texSlice, )    #endif
     void physVecToDrawCoords(const Vector2d& vec, int& x, int& y) const;
     Vector2d viewPos;
 private:
