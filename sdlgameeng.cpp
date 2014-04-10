@@ -3,17 +3,33 @@
 #include "SDL2/SDL_image.h"
 #include "Vector/Vector.h"
 
-//SDLGameEngine::SDLGameEngine(SDL_Renderer* renderer, int w, int h, double renderScale, int physTicksPerGameTick) :
-//    GameEngine(physTicksPerGameTick), m_renderScale(renderScale), m_renderer(renderer), m_w(w), m_h(h)
-//{
-//
-//}
+//#define USE_OPENGL
 
 SDLGameEngine::SDLGameEngine(SDL_Window* window, double renderScale, int physTicksPerGameTick) :
     GameEngine(physTicksPerGameTick), m_renderScale(renderScale)
 {
+    #ifndef USE_OPENGL
     m_renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    #endif
     SDL_GetWindowSize(window, &m_w, &m_h);
+
+    #ifdef USE_OPENGL
+
+    m_glcontext = SDL_GL_CreateContext(window);
+
+    glewInit();
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    glOrtho(0.0f, m_w, m_h, 0.0f, -100.0f, 100.0f);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    glViewport(0, 0, m_w, m_h);
+
+    #endif // USE_OPENGL
     viewPos = Vector2d::zero;
 }
 
@@ -25,12 +41,6 @@ void SDLGameEngine::step(double dt)
 
     SDL_RenderPresent(m_renderer);
 }
-
-//SDLGameObject::SDLGameObject(SDLGameEngine& gameEngine, SDL_Texture* texture) :
-//    GameObject(gameEngine), m_texture(texture), m_sdlGameEngine(&gameEngine)
-//{
-//
-//}
 
 SDLGameObject::SDLGameObject(SDLGameEngine& gameEngine, SDL_Surface* surface, bool dynamic) :
     GameObject(gameEngine, dynamic), m_sdlGameEngine(&gameEngine)
