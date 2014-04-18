@@ -38,6 +38,7 @@ private:
     #ifdef USE_OPENGL
 
     SDL_GLContext m_glcontext;
+    GLuint m_shaderProgram;
 
     #endif // USE_OPENGL
 
@@ -54,6 +55,12 @@ private:
     SDL_Texture* m_texture;
     virtual void draw();
     friend SDLGameEngine;
+
+    #ifdef USE_OPENGL
+
+    GLuint m_glTexture;
+
+    #endif // USE_OPENGL
 };
 
 #endif // SDLGAMEENG_H

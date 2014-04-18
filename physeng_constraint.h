@@ -2,6 +2,7 @@
 #define PHYS_CONSTRAINT_H
 
 #include "physeng.h"
+#include "Vector/Vector.h"
 
 #include <vector>
 
@@ -23,23 +24,45 @@ protected:
 class SpringConstraint : public PhysicsConstraint
 {
 public:
-    SpringConstraint(PhysicsEngine& physicsEngine, PhysicsObject* physObj1, PhysicsObject* physObj2, double length, double K, double damp);
+    SpringConstraint(PhysicsEngine& physicsEngine, PhysicsObject* physObj1, PhysicsObject* physObj2, double length, double K = 10000, double damp = 50);
     ~SpringConstraint();
-    bool resolveConstraint(double dt);
+    virtual bool resolveConstraint(double dt);
+protected:
     double m_length;
     double m_dampingFactor;
     double m_K;
 };
 
-class RopeConstraint : public PhysicsConstraint
+class RopeConstraint : public SpringConstraint
 {
 public:
-    RopeConstraint(PhysicsEngine& physicsEngine, PhysicsObject* physObj1, PhysicsObject* physObj2, double length);
+    RopeConstraint(PhysicsEngine& physicsEngine, PhysicsObject* physObj1, PhysicsObject* physObj2, double length, double K = 10000, double damp = 50);
     ~RopeConstraint();
+    virtual bool resolveConstraint(double dt);
+};
+
+class SlideConstraint : public PhysicsConstraint
+{
+public:
+    SlideConstraint(PhysicsEngine& physicsEngine, PhysicsObject* physObj, Vector2d direction, Vector2d position, double K = 10000, double linearDamping = 0,
+                    double transverseDamping = 50, double extentA = -1, double extentB = -1);
+    ~SlideConstraint();
     bool resolveConstraint(double dt);
-    double m_length;
-    double m_dampingFactor;
-    double m_K;
+private:
+    Vector2d m_direction, m_position, m_endpointA, m_endpointB;
+    double m_K, m_linearDamping, m_transverseDamping;
+    double m_extentA, m_extentB;
+};
+
+class CircularConstraint : public PhysicsConstraint
+{
+public:
+    CircularConstraint(PhysicsEngine& physicsEngine, PhysicsObject* physObj, Vector2d position, double radius, double K = 10000, double angularDamping = 0, double radialDamping = 0);
+    ~CircularConstraint();
+    bool resolveConstraint(double dt);
+private:
+    Vector2d m_position;
+    double m_radius, m_K, m_angularDamping, m_radialDamping;
 };
 
 #endif // PHYS_CONSTRAINT_H

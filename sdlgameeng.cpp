@@ -8,12 +8,12 @@
 SDLGameEngine::SDLGameEngine(SDL_Window* window, double renderScale, int physTicksPerGameTick) :
     GameEngine(physTicksPerGameTick), m_renderScale(renderScale)
 {
-    #ifndef USE_OPENGL
+#ifndef USE_OPENGL
     m_renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    #endif
+#endif
     SDL_GetWindowSize(window, &m_w, &m_h);
 
-    #ifdef USE_OPENGL
+#ifdef USE_OPENGL
 
     m_glcontext = SDL_GL_CreateContext(window);
 
@@ -29,23 +29,59 @@ SDLGameEngine::SDLGameEngine(SDL_Window* window, double renderScale, int physTic
 
     glViewport(0, 0, m_w, m_h);
 
-    #endif // USE_OPENGL
+#endif // USE_OPENGL
     viewPos = Vector2d::zero;
 }
 
 void SDLGameEngine::step(double dt)
 {
+#ifdef USE_OPENGL
+    glUseProgram(m_shaderProgram);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(0,0,0,1);
+
+    glPushMatrix();
+
+    glTranslatef(m_w/2, m_h/2, 0.0f);
+
+    GameEngine::step();
+    //glDrawElements(GL_TRIANGLES, numindices, GL_UNSIGNED_INT, vertexindices);
+
+    glUseProgram(0);
+
+    glPopMatrix();
+
+    SDL_GL_SwapWindow(window);
+#else
     SDL_RenderClear(m_renderer);
 
     GameEngine::step(dt);
 
     SDL_RenderPresent(m_renderer);
+#endif
 }
 
 SDLGameObject::SDLGameObject(SDLGameEngine& gameEngine, SDL_Surface* surface, bool dynamic) :
     GameObject(gameEngine, dynamic), m_sdlGameEngine(&gameEngine)
 {
     m_texture = SDL_CreateTextureFromSurface(gameEngine.m_renderer, surface);
+
+#ifdef USE_OPENGL
+
+    glGenTextures(1, &m_glTexture);
+    glBindTexture(GL_TEXTURE_2D, m_glTexture);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+    glTexImage2D(
+        GL_TEXTURE_2D, 0, m_texture->format->BytesPerPixel,
+        m_texture->w, m_texture->h,
+        0, (m_texture->format->BytesPerPixel == 4)?(GL_RGBA):(GL_RGB), GL_UNSIGNED_BYTE,
+        m_texture->pixels);
+
+#endif // USE_OPENGL
 }
 
 void SDLGameObject::draw()
