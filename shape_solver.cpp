@@ -20,10 +20,27 @@ BoundingBox::BoundingBox()
 
 bool BoundingBox::intersect(const BoundingBox& other) const
 {
-
+    bool xintersect = false, yintersect = false;
+    if(a.x >= other.a.x && a.x <= other.b.x)
+    {
+        xintersect = true;
+    }
+    if(a.y >= other.a.y && a.y <= other.b.y)
+    {
+        yintersect = true;
+    }
+    if(b.x >= other.a.x && a.x <= other.b.x)
+    {
+        xintersect = true;
+    }
+    if(b.y >= other.a.y && a.y <= other.b.y)
+    {
+        yintersect = true;
+    }
+    return xintersect && yintersect;
 }
 
 bool Polygon::intersect(const Polygon& other, Vector2d& hitNormal) const
 {
-
+    return false;
 }

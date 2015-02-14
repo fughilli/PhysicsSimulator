@@ -4,11 +4,11 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_scancode.h>
 
-//#define HD_RES
+#define HD_RES
 
 #ifdef HD_RES
-#define SCREEN_WIDTH_PIXELS (1920)
-#define SCREEN_HEIGHT_PIXELS (1080)
+#define SCREEN_WIDTH_PIXELS (2160)
+#define SCREEN_HEIGHT_PIXELS (1440)
 #define SCREEN_WIDTH_METERS (40)
 #else
 #define SCREEN_WIDTH_PIXELS (1280)
@@ -16,7 +16,7 @@
 #define SCREEN_WIDTH_METERS (26)
 #endif
 
-//#define FULLSCREEN
+#define FULLSCREEN
 
 #ifdef FULLSCREEN
 #define SDL_WINDOW_FLAGS    (SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN)
@@ -31,14 +31,14 @@
 using namespace std;
 
 //#define CIRCULAR_GRAVITY_TEST
-#define ROPE_TEST
-#define LOOP_TEST
-//#define CLOTH_TEST
+//#define ROPE_TEST
+//#define LOOP_TEST
+#define CLOTH_TEST
 //#define SPRING_TEST
-//#define CONTROL_BOTH_ENDS
+#define CONTROL_BOTH_ENDS
 //#define REAL_TIME
-#define WORLD_GRAVITY
-#define VISCOUS_FLUID 0.1
+//#define WORLD_GRAVITY
+//#define VISCOUS_FLUID 0.1
 //#define KEY_TO_STEP
 
 int main( int argc, char* args[])
@@ -54,7 +54,7 @@ int main( int argc, char* args[])
 
 #ifdef CIRCULAR_GRAVITY_TEST
 
-    const int numBalls = 10;
+    const int numBalls = 13;
     const int numWallBalls = 70;
 
     SDLGameObject *balls[numBalls];
@@ -64,19 +64,19 @@ int main( int argc, char* args[])
     {
         balls[i] = new SDLGameObject(gameEngine, ballSurf);
         balls[i]->radius = 0.5;
-        balls[i]->mass = 1e12;
-        balls[i]->pos = Vector2d::i.rotate(TWO_PI*i/numBalls)*((float)i*9/numBalls);
-        balls[i]->vel = balls[i]->pos.rotate(PI/2)*2;
+        balls[i]->mass = 1e11;
+        balls[i]->pos = Vector2d::i.rotate(TWO_PI*i/numBalls)*numBalls*balls[i]->radius*10/TWO_PI;
+        balls[i]->vel = balls[i]->pos.rotate(PI/2+PI/6)*0.21;
         balls[i]->selfGravity = true;
     }
 
-    for(int i = 0; i < numWallBalls; i++)
-    {
-        wall[i] = new SDLGameObject(gameEngine, ballSurf, false);
-        wall[i]->radius = 0.5;
-        wall[i]->mass = 1;
-        wall[i]->pos = Vector2d::i.rotate(TWO_PI*i/numWallBalls)*11;
-    }
+//    for(int i = 0; i < numWallBalls; i++)
+//    {
+//        wall[i] = new SDLGameObject(gameEngine, ballSurf, false);
+//        wall[i]->radius = 0.5;
+//        wall[i]->mass = 1;
+//        wall[i]->pos = Vector2d::i.rotate(TWO_PI*i/numWallBalls)*11;
+//    }
 
 #endif
 
@@ -176,7 +176,7 @@ int main( int argc, char* args[])
     balls[chain_length - 1]->radius = endpoint_radius;
     balls[chain_length - 1]->pos = Vector2d(total_chain_length/2, 0);
 
-    PhysicsConstraint* msc = new SlideConstraint(gameEngine, balls[chain_length - 1], Vector2d::j, balls[chain_length - 1]->pos, 10000, 0, 100, 5, 5);
+    PhysicsConstraint* msc = new SlideConstraint(gameEngine, balls[chain_length - 1], Vector2d::j, balls[chain_length - 1]->pos, 100000, 0, 100, 5, 5);
     //PhysicsConstraint* msc = new CircularConstraint(gameEngine, balls[chain_length - 1], balls[chain_length - 1]->pos - Vector2d(5, 0), 5, 10000, 0, 100);
 
     for(int i = 1; i < chain_length - 1; i++)
@@ -356,7 +356,36 @@ int main( int argc, char* args[])
         if(keyStates[SDL_Scancode::SDL_SCANCODE_SPACE])
         {
 #endif
+            gameEngine.clearScreen();
             gameEngine.step(phys_dt/PHYS_TICKS_PER_GRAPHICS_TICK * PHYS_TIMESCALE);
+            gameEngine.render();
+#ifdef CLOTH_TEST
+
+            for(int i = 0; i < clothWidth - 1; i++)
+            {
+                gameEngine.debugDrawVec(balls[i][0]->pos, balls[i+1][0]->pos - balls[i][0]->pos, 255, 255, 255);
+                gameEngine.debugDrawVec(balls[i][clothHeight-1]->pos, balls[i+1][clothHeight-1]->pos - balls[i][clothHeight-1]->pos, 255, 255, 255);
+            }
+
+            for(int j = 0; j < clothHeight - 1; j++)
+            {
+                gameEngine.debugDrawVec(balls[0][j]->pos, balls[0][j+1]->pos - balls[0][j]->pos, 255, 255, 255);
+                gameEngine.debugDrawVec(balls[clothWidth-1][j]->pos, balls[clothWidth-1][j+1]->pos - balls[clothWidth-1][j]->pos, 255, 255, 255);
+            }
+
+            for(int i = 0; i < clothWidth; i++)
+            {
+                for(int j = 0; j < clothHeight; j++)
+                {
+                    gameEngine.debugDrawVec(balls[i][j]->pos, balls[i][j]->vel/5, 0,255,0);
+                }
+            }
+
+
+
+#endif // CLOTH_TEST
+
+            gameEngine.present();
 
 #ifdef REAL_TIME
             phys_dt = (curTime - oldTime)/1000.0;
@@ -460,6 +489,10 @@ int main( int argc, char* args[])
                 balls[i][j]->applyForce(balls[i][j]->vel * balls[i][j]->vel.magnitude() * -1);
             }
         }
+
+
+
+
 
 #endif // CLOTH_TEST
 

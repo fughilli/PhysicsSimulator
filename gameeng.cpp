@@ -10,7 +10,10 @@ void GameEngine::step(double dt)
     {
         stepSim(dt/m_physTicksPerGameTick);
     }
+}
 
+void GameEngine::render()
+{
     for(vector<PhysicsObject*>::iterator iter = m_physicsObjects.begin(); iter != m_physicsObjects.end(); iter++)
     {
         GameObject* i_gameObject;

@@ -54,12 +54,20 @@ void SDLGameEngine::step(double dt)
 
     SDL_GL_SwapWindow(window);
 #else
-    SDL_RenderClear(m_renderer);
 
     GameEngine::step(dt);
 
-    SDL_RenderPresent(m_renderer);
 #endif
+}
+
+void SDLGameEngine::clearScreen()
+{
+    SDL_RenderClear(m_renderer);
+}
+
+void SDLGameEngine::present()
+{
+    SDL_RenderPresent(m_renderer);
 }
 
 SDLGameObject::SDLGameObject(SDLGameEngine& gameEngine, SDL_Surface* surface, bool dynamic) :

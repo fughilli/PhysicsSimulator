@@ -13,6 +13,7 @@ class GameEngine : public PhysicsEngine
 public:
     GameEngine(int physTicksPerGameTick);
     void step(double dt);
+    void render();
 private:
     int m_physTicksPerGameTick;
     friend GameObject;
