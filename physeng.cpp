@@ -1,5 +1,5 @@
 #include "physeng.h"
-#include "Vector/Vector.h"
+#include "VectorLib/Vector.h"
 #include <vector>
 
 // METERS, KILOGRAMS, SECONDS

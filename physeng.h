@@ -3,7 +3,7 @@
 
 #include "physeng_constraint.h"
 
-#include "Vector/Vector.h"
+#include "VectorLib/Vector.h"
 #include <vector>
 
 class PhysicsObject;

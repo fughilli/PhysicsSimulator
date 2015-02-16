@@ -1,7 +1,7 @@
 #include "sdlgameeng.h"
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
-#include "Vector/Vector.h"
+#include "VectorLib/Vector.h"
 
 //#define USE_OPENGL
 
