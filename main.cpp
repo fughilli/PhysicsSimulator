@@ -4,17 +4,9 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_scancode.h>
 
-#define HD_RES
-
-#ifdef HD_RES
 #define SCREEN_WIDTH_PIXELS (2160)
 #define SCREEN_HEIGHT_PIXELS (1440)
 #define SCREEN_WIDTH_METERS (40)
-#else
-#define SCREEN_WIDTH_PIXELS (1280)
-#define SCREEN_HEIGHT_PIXELS (800)
-#define SCREEN_WIDTH_METERS (26)
-#endif
 
 #define FULLSCREEN
 
@@ -30,17 +22,6 @@
 
 using namespace std;
 
-//#define CIRCULAR_GRAVITY_TEST
-//#define ROPE_TEST
-//#define LOOP_TEST
-#define CLOTH_TEST
-//#define SPRING_TEST
-#define CONTROL_BOTH_ENDS
-//#define REAL_TIME
-//#define WORLD_GRAVITY
-//#define VISCOUS_FLUID 0.1
-//#define KEY_TO_STEP
-
 int main( int argc, char* args[])
 {
 
@@ -52,288 +33,8 @@ int main( int argc, char* args[])
 
     SDL_Surface * ballSurf = IMG_Load("ball.png");
 
-#ifdef CIRCULAR_GRAVITY_TEST
 
-    const int numBalls = 13;
-    const int numWallBalls = 70;
-
-    SDLGameObject *balls[numBalls];
-    SDLGameObject *wall[numWallBalls];
-
-    for(int i = 0; i < numBalls; i++)
-    {
-        balls[i] = new SDLGameObject(gameEngine, ballSurf);
-        balls[i]->radius = 0.5;
-        balls[i]->mass = 1e11;
-        balls[i]->pos = Vector2d::i.rotate(TWO_PI*i/numBalls)*numBalls*balls[i]->radius*10/TWO_PI;
-        balls[i]->vel = balls[i]->pos.rotate(PI/2+PI/6)*0.21;
-        balls[i]->selfGravity = true;
-    }
-
-//    for(int i = 0; i < numWallBalls; i++)
-//    {
-//        wall[i] = new SDLGameObject(gameEngine, ballSurf, false);
-//        wall[i]->radius = 0.5;
-//        wall[i]->mass = 1;
-//        wall[i]->pos = Vector2d::i.rotate(TWO_PI*i/numWallBalls)*11;
-//    }
-
-#endif
-
-#ifdef SQUARE_TEST
-
-    const int numBalls = 10;
-
-    SDLGameObject *balls[numBalls*numBalls];
-
-    for(int i = 0; i < numBalls; i++)
-    {
-        for(int j = 0; j < numBalls; j++)
-        {
-            balls[i*numBalls + j] = new SDLGameObject(gameEngine, ballSurf);
-            balls[i*numBalls + j]->radius = 0.5;
-            balls[i*numBalls + j]->mass = 5;
-            balls[i*numBalls + j]->pos = Vector2d(i*2 - numBalls, j*2 - numBalls);
-            balls[i*numBalls + j]->vel = Vector2d::zero;
-            balls[i*numBalls + j]->selfGravity = false;
-        }
-    }
-
-    balls[2]->dynamic = false;
-
-#endif
-
-#ifdef WORLD_GRAVITY
-    ForceField *myForceField = new ForceField(gameEngine);
-    myForceField->fieldAccel = Vector2d(0, -9.8);
-#endif
-
-#ifdef FOUR_ORBIT_TEST
-    SDLGameObject *balls[5];
-
-    balls[0] = new SDLGameObject(gameEngine, ballSurf);
-    balls[1] = new SDLGameObject(gameEngine, ballSurf);
-    balls[2] = new SDLGameObject(gameEngine, ballSurf);
-    balls[3] = new SDLGameObject(gameEngine, ballSurf);
-    balls[4] = new SDLGameObject(gameEngine, ballSurf);
-
-    balls[0]->pos = Vector2d(0, 0);
-    balls[0]->vel = Vector2d::zero;
-    balls[0]->mass = 1e13;
-    balls[0]->radius = 1;
-    balls[0]->angvel = 50;
-    balls[0]->selfGravity = true;
-
-    balls[1]->pos = Vector2d(-10, 0);
-    balls[1]->vel = (Vector2d::j+Vector2d::i)*5.5;
-    balls[1]->mass = 1e13;
-    balls[1]->radius = 0.5;
-
-    balls[2]->pos = Vector2d(10, 0);
-    balls[2]->vel = (Vector2d::j+Vector2d::i)*-5.5;
-    balls[2]->mass = 1e13;
-    balls[2]->radius = 0.5;
-
-    balls[3]->pos = Vector2d(0, 10);
-    balls[3]->vel = (Vector2d::i-Vector2d::j)*5.5;
-    balls[3]->mass = 1e13;
-    balls[3]->radius = 0.5;
-
-    balls[4]->pos = Vector2d(0, -10);
-    balls[4]->vel = (Vector2d::i-Vector2d::j)*-5.5;
-    balls[4]->mass = 1e13;
-    balls[4]->radius = 0.5;
-#endif
-
-#ifdef ROPE_TEST
-#ifndef LOOP_TEST
-    const int chain_length = 40;
-    const double chain_link_length = 0.4;
-    const double chain_radius = 0.1;
-    const double endpoint_radius = 0.2;
-    const double endpoint_mass = 3;
-    double total_chain_length = (chain_length-2) * chain_link_length + 2 * (chain_link_length + endpoint_radius + chain_radius);
-
-    SDLGameObject* balls[chain_length + 1];
-    RopeConstraint* rpConsts[chain_length - 1];
-
-//    balls[chain_length] = new SDLGameObject(gameEngine, ballSurf, false);
-//    balls[chain_length]->mass = 0.1;
-//    balls[chain_length]->radius = 3;
-//    balls[chain_length]->pos = Vector2d(0, 5);
-
-    balls[0] = new SDLGameObject(gameEngine, ballSurf, false);
-    balls[0]->mass = endpoint_mass;
-    balls[0]->radius = endpoint_radius;
-    balls[0]->pos = Vector2d(-total_chain_length/2, 0);
-
-#ifdef CONTROL_BOTH_ENDS
-    balls[chain_length - 1] = new SDLGameObject(gameEngine, ballSurf, false);
-#else
-    balls[chain_length - 1] = new SDLGameObject(gameEngine, ballSurf, true);
-#endif
-    balls[chain_length - 1]->mass = endpoint_mass;
-    balls[chain_length - 1]->radius = endpoint_radius;
-    balls[chain_length - 1]->pos = Vector2d(total_chain_length/2, 0);
-
-    PhysicsConstraint* msc = new SlideConstraint(gameEngine, balls[chain_length - 1], Vector2d::j, balls[chain_length - 1]->pos, 100000, 0, 100, 5, 5);
-    //PhysicsConstraint* msc = new CircularConstraint(gameEngine, balls[chain_length - 1], balls[chain_length - 1]->pos - Vector2d(5, 0), 5, 10000, 0, 100);
-
-    for(int i = 1; i < chain_length - 1; i++)
-    {
-        balls[i] = new SDLGameObject(gameEngine, ballSurf);
-        balls[i]->mass = 1;
-        balls[i]->radius = chain_radius;
-        balls[i]->noCollide = true;
-        if(i > 1)
-            balls[i]->pos = balls[i-1]->pos + Vector2d(chain_link_length, 0);
-        else
-            balls[i]->pos = Vector2d(-total_chain_length/2 + chain_link_length + chain_radius + endpoint_radius, 0);
-
-        rpConsts[i-1] = new RopeConstraint(gameEngine, balls[i-1], balls[i], chain_link_length);
-    }
-
-    rpConsts[chain_length - 2] = new RopeConstraint(gameEngine, balls[chain_length - 2], balls[chain_length - 1], chain_link_length);
-
-
-#endif
-#endif // ROPE_TEST
-
-#ifdef ROPE_TEST
-#ifdef LOOP_TEST
-
-    const int loop_num = 20;
-    const int chain_length = loop_num;
-    const double loop_radius = 5;
-
-    SDLGameObject* balls[loop_num];
-    PhysicsConstraint* loopConsts[loop_num - 2];
-
-//    balls[chain_length] = new SDLGameObject(gameEngine, ballSurf, false);
-//    balls[chain_length]->mass = 0.1;
-//    balls[chain_length]->radius = 3;
-//    balls[chain_length]->pos = Vector2d(0, 5);
-
-    balls[0] = new SDLGameObject(gameEngine, ballSurf, false);
-    balls[0]->mass = 1;
-    balls[0]->radius = 1;
-    balls[0]->pos = Vector2d(0,0);
-
-#ifdef CONTROL_BOTH_ENDS
-    balls[chain_length - 1] = new SDLGameObject(gameEngine, ballSurf, false);
-#else
-    balls[loop_num-1] = new SDLGameObject(gameEngine, ballSurf, true);
-#endif
-    balls[loop_num-1]->mass = 1;
-    balls[loop_num-1]->radius = 0.5;
-    balls[loop_num-1]->pos = Vector2d(4, 0);
-
-    for(int i = 1; i < loop_num - 1; i++)
-    {
-        balls[i] = new SDLGameObject(gameEngine, ballSurf);
-        balls[i]->mass = 1;
-        balls[i]->radius = 0.3;
-        balls[i]->pos = (Vector2d::i*7).rotate(TWO_PI/(loop_num - 2)*(i-1));
-
-        loopConsts[i-1] = new CircularConstraint(gameEngine, balls[i], Vector2d(0,0), 7, 10000, 0, 100);
-    }
-
-
-#endif
-#endif // ROPE_TEST
-
-#ifdef CLOTH_TEST
-
-    const int clothWidth = 15, clothHeight = 10;
-
-    SDLGameObject* balls[clothWidth][clothHeight];
-    PhysicsConstraint* rpConsts[2][clothWidth][clothHeight];
-
-    for(int i = 0; i < clothWidth; i++)
-    {
-        for(int j = 0; j < clothHeight; j++)
-        {
-            balls[i][j] = new SDLGameObject(gameEngine, ballSurf, true);
-            balls[i][j]->pos = Vector2d(0.5*i, -0.5*j);
-            balls[i][j]->mass = 1;
-            balls[i][j]->radius = 0.1;
-            balls[i][j]->selfGravity = false;
-            balls[i][j]->noCollide = true;
-        }
-        //balls[i][clothHeight-1]->mass = 10;
-    }
-
-
-    //balls[0][clothHeight-1]->mass = 50;
-
-    balls[0][0]->dynamic = false;
-#ifdef CONTROL_BOTH_ENDS
-    balls[clothWidth-1][0]->dynamic = false;
-#endif
-
-    for(int i = 0; i < clothWidth; i++)
-    {
-        for(int j = 1; j < clothHeight; j++)
-        {
-            rpConsts[0][i][j] = new RopeConstraint(gameEngine, balls[i][j-1], balls[i][j], 1);
-        }
-    }
-
-
-    for(int j = 0; j < clothHeight; j++)
-    {
-        for(int i = 1; i < clothWidth; i++)
-        {
-            rpConsts[1][i][j] = new RopeConstraint(gameEngine, balls[i-1][j], balls[i][j], 1);
-        }
-    }
-
-#endif // CLOTH_TEST
-
-#ifdef SPRING_TEST
-
-    const int chain_length = 2;
-    const double chain_link_length = 3;
-    double total_chain_length = (chain_length-1) * chain_link_length;
-
-    double spring_constant = 5, damping_constant = 0.1;
-
-    SDLGameObject* balls[chain_length];
-    PhysicsConstraint* rpConsts[chain_length - 1];
-
-    balls[0] = new SDLGameObject(gameEngine, ballSurf, false);
-    balls[0]->mass = 1;
-    balls[0]->radius = 0.5;
-    balls[0]->pos = Vector2d(0, 0);
-
-#ifdef CONTROL_BOTH_ENDS
-    balls[chain_length - 1] = new SDLGameObject(gameEngine, ballSurf, false);
-#else
-    balls[chain_length - 1] = new SDLGameObject(gameEngine, ballSurf, true);
-#endif
-    balls[chain_length - 1]->mass = 1;
-    balls[chain_length - 1]->radius = 0.5;
-    balls[chain_length - 1]->pos = Vector2d(0, -total_chain_length);
-
-    for(int i = 1; i < chain_length - 1; i++)
-    {
-        balls[i] = new SDLGameObject(gameEngine, ballSurf);
-        balls[i]->mass = 1;
-        balls[i]->radius = 0.5;
-        balls[i]->pos = balls[i-1]->pos + Vector2d(0, -chain_link_length);
-
-        rpConsts[i-1] = new SpringConstraint(gameEngine, balls[i-1], balls[i], chain_link_length, spring_constant, damping_constant);
-    }
-
-    rpConsts[chain_length - 2] = new SpringConstraint(gameEngine, balls[chain_length - 2], balls[chain_length - 1], chain_link_length, spring_constant, damping_constant);
-
-#endif // SPRING_TEST
     SDL_FreeSurface(ballSurf);
-
-#ifdef REAL_TIME
-    Uint32 oldTime, curTime = 0;
-    curTime = SDL_GetTicks();
-#endif
 
     SDL_Event gameEvent;
     bool keyStates[323] = {false};
@@ -343,58 +44,17 @@ int main( int argc, char* args[])
 
     while(1)
     {
-#ifdef REAL_TIME
-        oldTime = curTime;
-        curTime = SDL_GetTicks();
 
-
-#else
         phys_dt = DEFAULT_PHYS_DT; // ~60 FPS
-#endif
 
-#ifdef KEY_TO_STEP
-        if(keyStates[SDL_Scancode::SDL_SCANCODE_SPACE])
-        {
-#endif
-            gameEngine.clearScreen();
-            gameEngine.step(phys_dt/PHYS_TICKS_PER_GRAPHICS_TICK * PHYS_TIMESCALE);
-            gameEngine.render();
-#ifdef CLOTH_TEST
-
-            for(int i = 0; i < clothWidth - 1; i++)
-            {
-                gameEngine.debugDrawVec(balls[i][0]->pos, balls[i+1][0]->pos - balls[i][0]->pos, 255, 255, 255);
-                gameEngine.debugDrawVec(balls[i][clothHeight-1]->pos, balls[i+1][clothHeight-1]->pos - balls[i][clothHeight-1]->pos, 255, 255, 255);
-            }
-
-            for(int j = 0; j < clothHeight - 1; j++)
-            {
-                gameEngine.debugDrawVec(balls[0][j]->pos, balls[0][j+1]->pos - balls[0][j]->pos, 255, 255, 255);
-                gameEngine.debugDrawVec(balls[clothWidth-1][j]->pos, balls[clothWidth-1][j+1]->pos - balls[clothWidth-1][j]->pos, 255, 255, 255);
-            }
-
-            for(int i = 0; i < clothWidth; i++)
-            {
-                for(int j = 0; j < clothHeight; j++)
-                {
-                    gameEngine.debugDrawVec(balls[i][j]->pos, balls[i][j]->vel/5, 0,255,0);
-                }
-            }
+        gameEngine.clearScreen();
+        gameEngine.step(phys_dt/PHYS_TICKS_PER_GRAPHICS_TICK * PHYS_TIMESCALE);
+        gameEngine.render();
 
 
+        gameEngine.present();
 
-#endif // CLOTH_TEST
 
-            gameEngine.present();
-
-#ifdef REAL_TIME
-            phys_dt = (curTime - oldTime)/1000.0;
-            std::cerr << phys_dt << std::endl;
-#endif // REAL_TIME
-#ifdef KEY_TO_STEP
-            SDL_Delay(100);
-        }
-#endif
         SDL_PollEvent(&gameEvent);
 
         if(gameEvent.type == SDL_QUIT)
@@ -409,103 +69,46 @@ int main( int argc, char* args[])
         {
             keyStates[gameEvent.key.keysym.scancode] = false;
         }
-        Vector2d dv1 = Vector2d::zero;
-        Vector2d dv2 = Vector2d::zero;
+
 
         if(keyStates[SDL_Scancode::SDL_SCANCODE_W])
         {
-            dv1 += Vector2d::j/phys_dt;
+
         }
         if(keyStates[SDL_Scancode::SDL_SCANCODE_D])
         {
-            dv1 += Vector2d::i/phys_dt;
+
         }
         if(keyStates[SDL_Scancode::SDL_SCANCODE_S])
         {
-            dv1 += Vector2d::j*-1/phys_dt;
+
         }
         if(keyStates[SDL_Scancode::SDL_SCANCODE_A])
         {
-            dv1 += Vector2d::i*-1/phys_dt;
+
         }
 
         if(keyStates[SDL_Scancode::SDL_SCANCODE_UP])
         {
-            dv2 += Vector2d::j/phys_dt;
+
         }
         if(keyStates[SDL_Scancode::SDL_SCANCODE_RIGHT])
         {
-            dv2 += Vector2d::i/phys_dt;
+
         }
         if(keyStates[SDL_Scancode::SDL_SCANCODE_DOWN])
         {
-            dv2 += Vector2d::j*-1/phys_dt;
+
         }
         if(keyStates[SDL_Scancode::SDL_SCANCODE_LEFT])
         {
-            dv2 += Vector2d::i*-1/phys_dt;
+
         }
-#ifdef SPRING_TEST
-#define ROPE_TEST
-#endif // SPRING_TEST
-#ifdef ROPE_TEST
-
-        dv1/=4;
-
-
-        balls[0]->vel = dv1;
-
-#ifdef CONTROL_BOTH_ENDS
-        dv2/=4;
-        balls[chain_length - 1]->vel = dv2;
-#else
-        dv2*=100;
-        balls[chain_length - 1]->applyForce(dv2 * balls[chain_length - 1]->mass);
-#endif
-
-#ifdef VISCOUS_FLUID
-        for(int i = 0; i < chain_length; i++)
-        {
-            if(keyStates[SDL_Scancode::SDL_SCANCODE_SPACE])
-                balls[i]->applyForce(balls[i]->vel * balls[i]->vel.magnitude() * -(10));
-            else
-                balls[i]->applyForce(balls[i]->vel * balls[i]->vel.magnitude() * -(VISCOUS_FLUID));
-        }
-#endif
-#endif
-
-#ifdef CLOTH_TEST
-
-        balls[0][0]->vel = dv1/4;
-
-#ifdef CONTROL_BOTH_ENDS
-        balls[clothWidth-1][0]->vel = balls[0][0]->vel + dv2/4;
-#endif
-
-        for(int i = 0; i < clothWidth; i++)
-        {
-            for(int j = 0; j < clothHeight; j++)
-            {
-                balls[i][j]->applyForce(balls[i][j]->vel * balls[i][j]->vel.magnitude() * -1);
-            }
-        }
-
-
-
-
-
-#endif // CLOTH_TEST
-
         if(keyStates[SDL_Scancode::SDL_SCANCODE_Q])
         {
             break;
         }
     }
-
-    delete[] balls;
-#ifdef CIRCULAR_GRAVITY_TEST
-    delete[] wall;
-#endif
 
     SDL_Quit();
 
